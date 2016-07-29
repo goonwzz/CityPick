@@ -1,0 +1,129 @@
+
+//data为国家数据，callback返回选中的省份和城市。或者省份和国家
+
+
+function CityPick(data,_callback){
+
+    this.createHotCityPick=function(data,_callback){
+
+        var cityHotUl=$adviser.create("ul",{});
+        for (var i = 0; i <data.length; i++) {
+            var Citydata={
+                "pname":data[i]["pname"],
+                "name":data[i]["name"],
+                "pnameid":data[i]["pid"],
+                "nameid":data[i]["id"]
+            }
+            var HotCityLi=$adviser.create("li",{html:data[i].name}).data("data",Citydata).click(function(){
+                var data=$(this).data("data");
+                var pname=data["pname"];
+                var name=data["name"];
+                if(_callback){
+                    _callback(data);
+                }
+
+                $(".CityChoes").remove();
+
+
+            })
+            cityHotUl.append(HotCityLi);
+        }
+
+        var HotCity=$adviser.create("div",{className:"HotCity",html:"<p>热门城市</p>"}).append(cityHotUl);
+        return HotCity;
+    }
+    this.createProvince=function (_data,_callback){
+        var contry=_data.name;
+        var contryid=_data.id;
+        var that=this;
+        var all_wrap=$adviser.create("div",{className:"all_wrap",html:"<p>选择地区</p>"});
+        var Pul=$adviser.create("ul",{className:"province_wrap"});
+        var data=_data.province;
+        for (var i = 0; i<data.length; i++) {
+
+            var pulli=$adviser.create("li",{className:"province"});
+
+
+
+            var pulidiv=$adviser.create("div",{className:"provinceName",html:data[i].name}).data("data",data[i]).click(function(){
+
+                $(".provinceName").removeClass("active");
+                $(this).addClass("active");
+                $(".City_wrap").remove();
+
+                var data=$(this).data("data");
+                if(data.city.length<1){
+                    //如果省份没有下级就返回国家和省份
+                    var bdata={
+                        "pname":contry,
+                        "name":data["name"],
+                        "pnameid":contryid,
+                        "nameid":data["id"]
+                    }
+                    if(_callback)_callback(bdata);
+
+                    $(".CityChoes").remove();
+
+                }
+                else{
+                    var domli=that.createCityRowp(data,_callback);
+
+                    $(this).parent("li").get(0).appendChild(domli.get(0));
+                }
+
+
+
+            });
+            pulli.append(pulidiv);
+            Pul.append(pulli);
+
+        }
+        all_wrap.append(Pul);
+        return all_wrap;
+    }
+    this.createCityRowp=function(data,_callback){
+        var pname=data.name;
+        var pid=data.id;
+        var data=data.city;
+
+        var pulliul=$adviser.create("ul",{className:"City_wrap"});
+        for(var i=0;i<data.length;i++){
+
+            var dCity={
+                "pname":pname,
+                "name":data[i]["name"],
+                "pnameid":pid,
+                "nameid":data[i]["id"]
+
+            }
+
+            var li=$adviser.create("li",{className:"city",html:data[i].name}).data("data",dCity).click(function(){
+                var data=$(this).data("data");
+
+
+                if(_callback){
+                    _callback(data);
+                }
+
+                $(".CityChoes").remove();
+
+            });
+            pulliul.append(li);
+        }
+
+        return pulliul;
+
+    }
+
+    this.init=function(data,_callback){
+
+        var HotCity=data.hot;
+        var province=data;
+        var d=$adviser.create("div",{className:"CityChoes"});
+        if(HotCity)d.append(createHotCityPick(HotCity,_callback));
+        d.append($adviser.create("div",{className:"line"}));
+        d.append(createProvince(province,_callback));
+        return d;
+    }
+    return this.init(data,_callback);
+}
